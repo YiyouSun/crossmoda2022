@@ -14,8 +14,10 @@ Self-training adapts the decision boundary of the segmentation network to fit th
 
 
 Dataset structure:
+```
 data/
 ├── train_source
 ├── train_target
 ├── validation
 ├── ...
+```
