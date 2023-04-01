@@ -1,7 +1,7 @@
 # crossmoda2022
 medical imaging benchmark of unsupervised cross-modality Domain Adaptation approaches (from contrast-enhanced T1 to high-resolution T2)
 
-Project Page:https://crossmoda2022.grand-challenge.org/
+Project Page:https://crossmoda2022.grand-challenge.org/ .
 
 Implementation is based algorithm came up with by ne2e group which has best performance on segmentation task. Paper: https://arxiv.org/abs/2109.14219 .  
 Two deeplearning models are required to be trained to generate segmentation maps on non-labeled hrT2 images. 
