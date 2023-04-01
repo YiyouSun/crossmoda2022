@@ -11,3 +11,9 @@ Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce d
 
 nn-Unet:
 Self-training adapts the decision boundary of the segmentation network to fit the distribu- tion of hrT2 scans. nn-Unet is introduced in https://arxiv.org/abs/1904.08128 .
+
+Dataset structure:
+./data:
+--train_source
+--train_target
+--validation
