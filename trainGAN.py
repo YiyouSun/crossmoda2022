@@ -61,30 +61,6 @@ p.build_loader()
 #build model
 p.build_model()
 p.train()
-'''
 
-#load data list
-
-train_source, train_target,val_target = p.load_t1_t2_files()
-# Set deterministic training for reproducibility
-train_transforms,val_transforms = p.get_transforms_niceGAN()
-
-train_transforms = Compose(
-            [
-                LoadNifti(image_only =True), 
-                
-                AddChannel(),
-                Orientation( axcodes="RAS"),
-                NormalizeIntensity(),
-                
-                ToTensor(),
-            ]
-        )
-
-p.check_transforms_t1_t2("t1",train_source, train_transforms)
-p.check_transforms_t1_t2("t2",train_target, train_transforms)
-p.check_transforms_t1_t2("t2",val_target, val_transforms)
-
-
-
-'''
+#creating synthesized hrT2 from crT1 
+p.inference()
