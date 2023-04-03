@@ -8,6 +8,10 @@ Two deeplearning models are required to be trained to generate segmentation maps
 
 NiceGAN:
 Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce domain shift in the training segmentation model. Backbone of NiceGAN model is introduced in https://arxiv.org/abs/2003.00273 .
+### train NiceGAN(etension of cycled GAN)
+'''
+python trainGAN.py 
+'''
 
 nn-Unet:
 Self-training adapts the decision boundary of the segmentation network to fit the distribu- tion of hrT2 scans. nn-Unet is introduced in https://arxiv.org/abs/1904.08128 .
