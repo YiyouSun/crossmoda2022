@@ -13,7 +13,7 @@ Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce d
 ```
 pip install -r requirements.txt
 ```
-### train NiceGAN(etension of cycled GAN)
+### train NiceGAN(extension version of cycled GAN)
 ```
 python trainGAN.py 
 ```
