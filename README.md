@@ -8,6 +8,11 @@ Two deeplearning models are required to be trained to generate segmentation maps
 
 NiceGAN:
 Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce domain shift in the training segmentation model. Backbone of NiceGAN model is introduced in https://arxiv.org/abs/2003.00273 .
+
+### build environments
+```
+pip install -r requirements.txt
+```
 ### train NiceGAN(etension of cycled GAN)
 ```
 python trainGAN.py 
