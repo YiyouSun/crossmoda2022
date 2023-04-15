@@ -16,6 +16,7 @@ class MoDA(Dataset):
         self.transform = transform
 
         train_path = self._base_dir+'/train.txt'
+        train_target_path = self._base_dir+'/train_target.txt'
         test_path = self._base_dir+'/val.txt'
         self.num_classes = num_classes
 
@@ -27,11 +28,22 @@ class MoDA(Dataset):
                 self.name_list = [a.strip() for a in f.readlines()]
         self.file_list = []
         for row in self.name_list:
-            t = os.path.join(self._base_dir,'training_source',row+'_ceT1.nii.gz')
-            label = os.path.join(self._base_dir,'training_source',row+'_Label.nii.gz')
+            t = os.path.join(self._base_dir,"train_source",row+'_ceT1.nii.gz')
+            label = os.path.join(self._base_dir,"train_source",row+'_Label.nii.gz')
             # mask = os.path.join(self._base_dir,'training_target',row[0]+'_GIFoutput.nii.gz')
 
             self.file_list.append({'image':t,"label":label})
+
+        print("total labeled {} samples".format(len(self.file_list)))
+
+        if split == 'train':
+            with open(train_target_path, 'r') as f:
+                self.name_list2 = [a.strip() for a in f.readlines()]
+            for row in self.name_list2:
+                t = os.path.join(self._base_dir,"train_target",row+'_hrT2.nii.gz')
+                label = os.path.join(self._base_dir,"train_target",row+'_Label.nii.gz')
+                self.file_list.append({'image':t,"label":label})
+
         if num is not None:
             self.file_list = self.file_list[:num]
         print("total {} samples".format(len(self.file_list)))
