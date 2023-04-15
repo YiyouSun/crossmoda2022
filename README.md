@@ -7,7 +7,7 @@ Implementation is based algorithm came up with by ne2e group which has best perf
 Two deeplearning models are required to be trained to generate segmentation maps on non-labeled hrT2 images. 
 
 
-###Dataset structure:
+### Dataset structure:
 ```
 data/
 ├── train_source
@@ -17,7 +17,7 @@ data/
 ```
 t1 scans are saved in train_source, while t2 scans are saved in train_target for training. Validation set is used for testing.
 
-##NiceGAN:
+## NiceGAN:
 Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce domain shift in the training segmentation model. Backbone of NiceGAN model is introduced in https://arxiv.org/abs/2003.00273 .
 
 ### build environments
@@ -35,7 +35,7 @@ Middle images show output of t1_to_t2 generator of NiceGAN, due to the limitatio
 Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss between original t1 and transfered back t1 in model. 
 ![Image text](https://raw.githubusercontent.com/hongmaju/light7Local/master/img/productShow/20170518152848.png)
 
-##nn-Unet:
+## nn-Unet:
 Self-training adapts the decision boundary of the segmentation network to fit the distribu- tion of hrT2 scans. nn-Unet is introduced in https://arxiv.org/abs/1904.08128 .
 
 
