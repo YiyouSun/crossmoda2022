@@ -31,10 +31,10 @@ pip install -r requirements.txt
 python trainGAN.py 
 ```
 ### output
-![Image text](https://raw.githubusercontent.com/hongmaju/light7Local/master/img/productShow/20170518152848.png)
-10 samples are splited from train_source as validation, top images show  cropped, resized, flipped 2-D slice of original t1 scans. 
-Middle images show output of t1_to_t2 generator of NiceGAN, due to the limitation of input image size and reduction of parameters and flops of model, transferred images' quality is not as good as original t1 scans. 
-Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss between original t1 and transfered back t1 in model. 
+![Image text](https://raw.githubusercontent.com/hongmaju/light7Local/master/img/productShow/20170518152848.png)  
+10 samples are splited from train_source as validation, top images show  cropped, resized, flipped 2-D slice of original t1 scans.   
+Middle images show output of t1_to_t2 generator of NiceGAN, due to the limitation of input image size and reduction of parameters and flops of model, transferred images' quality is not as good as original t1 scans.   
+Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss between original t1 and transfered back t1 in model.   
 
 ## nn-Unet:
 Self-training adapts the decision boundary of the segmentation network to fit the distribu- tion of hrT2 scans. nn-Unet is introduced in https://arxiv.org/abs/1904.08128 .
