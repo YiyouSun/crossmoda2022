@@ -17,15 +17,17 @@ data/
 ```
 t1 scans are saved in train_source, while t2 scans are saved in train_target for training. Validation set is used for testing.
 
-## NiceGAN:
-Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce domain shift in the training segmentation model. Backbone of NiceGAN model is introduced in https://arxiv.org/abs/2003.00273 .
-
 ### build environments
 python version=3.8
 torch=2.0.0
 ```
 pip install -r requirements.txt
 ```
+
+## NiceGAN:
+Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce domain shift in the training segmentation model. Backbone of NiceGAN model is introduced in https://arxiv.org/abs/2003.00273 .
+
+
 ### train NiceGAN(extension version of cycled GAN)
 ```
 python trainGAN.py 
