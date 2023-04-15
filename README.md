@@ -32,11 +32,21 @@ python trainGAN.py
 ```
 ### output
 ![Image text](https://raw.githubusercontent.com/hongmaju/light7Local/master/img/productShow/20170518152848.png)  
-10 samples are splited from train_source as validation, top images show  cropped, resized, flipped 2-D slice of original t1 scans.   
-Middle images show output of t1_to_t2 generator of NiceGAN, due to the limitation of input image size and reduction of parameters and flops of model, transferred images' quality is not as good as original t1 scans.   
-Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss between original t1 and transfered back t1 in model.   
+* 10 samples are splited from train_source as validation(3 of 10 are showed here), top images show cropped, resized, flipped 2-D slice of original t1 scans.   
+* Middle images show output of t1_to_t2 generator of NiceGAN, due to the limitation of input image size and reduction of parameters and flops of model, transferred images' quality is not as good as original t1 scans.   
+* Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss between original t1 and transfered back t1 in model.   
 
-## nn-Unet:
-Self-training adapts the decision boundary of the segmentation network to fit the distribu- tion of hrT2 scans. nn-Unet is introduced in https://arxiv.org/abs/1904.08128 .
 
+## semi-supervised Unet:
+Self-training adapts the decision boundary of the segmentation network to fit the distribution of hrT2 scans. Refence code: https://github.com/HiLab-git/SSL4MIS
+
+### train Unet
+```
+cd unet/code
+./semi_train3d.sh
+```
+
+### semi-superviesed learning on original t1 scans and labels: predication on validation t1 2-D slice
+
+### semi-superviesed learning on transfered t1 scans, labels and t2 scans: prediaction on validation t2 2-D slice
 
