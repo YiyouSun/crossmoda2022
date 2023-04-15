@@ -2,16 +2,6 @@ import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
 
-def str2bool(x):
-    return x.lower() in ('true')
-
-def denorm(x):
-    return x * 0.5 + 0.5
-
-def tensor2numpy(x):
-    return x.detach().cpu().numpy().transpose(1,2,0)
-
-
 class ResnetGenerator(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=64, n_blocks=6, img_size=256, light=False):
         assert(n_blocks >= 0)
