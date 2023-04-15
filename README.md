@@ -35,7 +35,7 @@ Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce d
 ```
 python trainGAN.py 
 ```
-### output
+### output 20000 iteration, best performed model
 ![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/t1_0020000_3sample.png)  
 * 10 samples are splited from train_source as validation(3 of 10 are showed here), top images show cropped, resized, flipped 2-D slice of original t1 scans.   
 * Middle images show output of t1_to_t2 generator of NiceGAN, due to the limitation of input image size and reduction of parameters and flops of model, transferred images' quality is not as good as original t1 scans.   
