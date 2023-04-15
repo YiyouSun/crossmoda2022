@@ -13,9 +13,12 @@ data/
 ├── train_source
 ├── train_target
 ├── validation
+├── unet
+
 ├── ...
 ```
-t1 scans are saved in train_source, while t2 scans are saved in train_target for training. Validation set is used for testing.
+t1 scans are saved in train_source, while t2 scans are saved in train_target for training NiceGAN. Validation set is used for testing.  
+sythesized hrT2 and hrT2 are saved in unet for training and testing segmentation model
 
 ### build environments
 python version=3.8
