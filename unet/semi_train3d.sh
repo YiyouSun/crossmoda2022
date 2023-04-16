@@ -1,1 +1,1 @@
-nohup python train_mean_teacher_3D.py --labeled_num 50 --num_classes 3 --root_path ../../../nnunet/DA/data/ --max_iterations 30000 --exp MoDA/Mean_Teacher --base_lr 0.1 &
+nohup python train_mean_teacher_3D.py --labeled_num 190 --num_classes 3 --root_path ../data/unet --max_iterations 30000 --exp MoDA/Mean_Teacher --base_lr 0.1 &
