@@ -54,7 +54,7 @@ cd unet/code
 
 ### semi-superviesed learning on original t1 scans and labels: predication on validation t1 2-D slice
   
-![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/unet_t1.png)  
+![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/predication/crossmoda2021_ldn_103.png)  
 
 ### semi-superviesed learning on Synthesized t2 scans, labels and original t2 scans: prediaction on validation t2 2-D slice
 
