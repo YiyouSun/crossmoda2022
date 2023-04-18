@@ -42,7 +42,8 @@ python trainGAN.py
 * Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss between original t1 and transfered back t1 in model.   
 
 
-## semi-supervised Unet:
+## semi-supervised Unet: 
+## more details check slide:https://docs.google.com/presentation/d/169fnBWhWc0aZiRVoFuq8T28ePJBEuNThsMWZRg27k6k/edit#slide=id.p
 Self-training adapts the decision boundary of the segmentation network to fit the distribution of hrT2 scans. Refence code: https://github.com/HiLab-git/SSL4MIS
 
 ### train Unet
