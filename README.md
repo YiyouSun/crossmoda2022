@@ -39,7 +39,9 @@ python trainGAN.py
 ![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/t1.png)  
 * 10 samples are splited from train_source as validation(4 of 10 are showed here), top images show cropped, resized, flipped 2-D slice of original t1 scans. Original image shape (512, 512, 120) & (256, 256, 60). Input image shape of NiceGAN (16, 128, 128), third dimension of t1 scan is permuted into first channel as batch size. 
 * Middle images show output of t1_to_t2 generator of NiceGAN. Image quality is not as good as technical report which might comes from reduction of numbers of params and flops of NiceGAN and limitation of iterations. 
-* Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss and reconstruction loss between original t1 and transfered back t1 in model.  
+* Bottom images show output of t1_to_t2_t1 generator of NiceGAN, these images are used to calculate cycle loss and reconstruction loss between original t1 and transfered back t1 in model.    
+
+  
 ![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/t2.png)  
 * Similar plots from t2 to t1
 
