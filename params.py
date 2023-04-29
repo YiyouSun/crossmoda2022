@@ -57,8 +57,8 @@ class params:
         parser.add_argument('--iteration', type=int, default=300000, help='The number of training iterations')
         parser.add_argument("--train_batch_size", type=int, default=1, help="batch size of the forward pass")
         parser.add_argument("--initial_learning_rate", type=float, default=1e-4, help="learning rate at first epoch")
-        parser.add_argument('--print_freq', type=int, default=100, help='The number of image print freq')
-        parser.add_argument('--save_freq', type=int, default=10000, help='The number of model save freq')
+        parser.add_argument('--print_freq', type=int, default=200, help='The number of image print freq')
+        parser.add_argument('--save_freq', type=int, default=3000, help='The number of model save freq')
         parser.add_argument('--decay_flag', type=str2bool, default=True, help='The decay_flag')
         parser.add_argument('--num_workers', type=int, default=1, help='The number of parallel workers for batch training')
 
@@ -74,8 +74,9 @@ class params:
         parser.add_argument('--n_dis', type=int, default=7, help='The number of discriminator layer')
 
         parser.add_argument('--img_size', type=int, default=256, help='The size of image')
-        parser.add_argument('--img_ch', type=int, default=32, help='The size of image channel, e.g RGB 2-D image channel=3')
-        
+        parser.add_argument('--img_ch', type=int, default=1, help='The size of image channel, e.g RGB 2-D image channel=3')
+        parser.add_argument('--bigpatch', type=str2bool, default=False, help='The big patch size flag')
+
         parser.add_argument(
             "--cuda", type=str, default="cuda:1", help="gpu id"
         )
@@ -83,8 +84,7 @@ class params:
 
         parser.add_argument(
             "--results_folder_name", type=str, default="temp", help="name of results folder"
-        )   
-
+        )
 
         args = parser.parse_args()
         self.data_root = "./data"
@@ -114,7 +114,7 @@ class params:
 
         self.print_freq = args.print_freq
         self.save_freq = args.save_freq
-        self.val = 0.05 # validation set percentage
+        self.val = 0.05 #validation set percentage
         if self.debug:
             self.val = 0.3
 
@@ -136,30 +136,26 @@ class params:
         self.n_dis = args.n_dis
         #self.img_size = args.img_size
         self.img_ch = args.img_ch
-        
+
+        self.img_ch = 1
+        self.sptial_shape_t1 = [128,128,16]
+        self.sptial_shape_t2 = [128,128,16]
+        self.pad_crop_shape = [128,128,16]
 
         # print(self.train_batch_size)
         # generate the results
-        
-        
-        self.sptial_shape_t1 = [256, 256, 64]
-        self.sptial_shape_t2 = [256, 256, 64]
-        #### this model would reach over 200GB with params and flops
-        #self.pad_crop_shape = [384, 384, 64]
-        #self.pad_crop_shape_test = [384, 384, 64] 
-        
-        
-        self.pad_crop_shape = [128, 128, 32]
-        
-        self.img_ch = 32
+        if args.bigpatch:
+            self.sptial_shape_t1 = [256, 256, 32]
+            self.sptial_shape_t2 = [256, 256, 32]
+            
+            #### this model would reach over 200GB with params and flops
+            self.pad_crop_shape = [256,256, 32] 
 
-        #self.pad_crop_shape = [256, 256, 32]
-        
-        
         if self.debug:
             self.pad_crop_shape = [128, 128, 32]
             self.pad_crop_shape_test = [128, 128, 32]
         
+
         self.img_size = self.pad_crop_shape[0]
         
         self.results_folder_path = os.path.join(self.root, "results/", args.results_folder_name)
@@ -172,6 +168,7 @@ class params:
         self.figures_path = os.path.join(self.results_folder_path, "figures")
         
         self.inference_path =  os.path.join(self.results_folder_path, "inference")
+        self.t1_path =  os.path.join(self.inference_path, "t1")
         self.ht2_path =  os.path.join(self.inference_path, "ht2")
         self.plabel_path =  os.path.join(self.inference_path, "plabel")
 
@@ -194,6 +191,9 @@ class params:
         if not os.path.exists(self.inference_path):
             os.makedirs(self.inference_path, exist_ok=False)
             os.chmod(self.inference_path, 0o777)
+        if not os.path.exists(self.t1_path):
+            os.makedirs(self.t1_path, exist_ok=False)
+            os.chmod(self.t1_path, 0o777)
         if not os.path.exists(self.ht2_path):
             os.makedirs(self.ht2_path, exist_ok=False)
             os.chmod(self.ht2_path, 0o777)
@@ -289,7 +289,6 @@ class params:
                 NormalizeIntensityd(keys=["t1"]),
                 SpatialPadd(keys=["t1"], spatial_size=self.sptial_shape_t1),
                 RandSpatialCropd( keys=["t1"], roi_size=self.sptial_shape_t1,random_center=True, random_size=False),
-                Resized(keys=['t1'],spatial_size = self.pad_crop_shape,mode='area'),
                 RandFlipd(keys=["t1"], prob=0.5, spatial_axis=2),              
                 ToTensord(keys=["t1"]),
             ]
@@ -304,7 +303,6 @@ class params:
                 NormalizeIntensityd(keys=["t2"]),
                 SpatialPadd(keys=["t2"], spatial_size=self.sptial_shape_t2),
                 RandSpatialCropd( keys=["t2"], roi_size=self.sptial_shape_t2,random_center=True,random_size=False),
-                Resized(keys=['t2'],spatial_size = self.pad_crop_shape,mode='area'),
                 RandFlipd(keys=["t2"], prob=0.5, spatial_axis=2),           
                 ToTensord(keys=["t2"]),
             ]
@@ -339,7 +337,7 @@ class params:
         slice_index = 40
         # check the transforms on the first validation set image
         check_ds = monai.data.Dataset(data=train, transform=train_transforms)  # apply transform
-        check_loader = DataLoader(check_ds, batch_size=2)
+        check_loader = DataLoader(check_ds, batch_size=1)
         check_data = monai.utils.misc.first(check_loader)  # gets the first item from an input iterable
         
         logger.info("-" * 10)
@@ -354,16 +352,7 @@ class params:
             logger.info("Check the transforms on the first train target set image")
             logger.info("check_data['image'].shape = {}".format(check_data["t2"].shape))
         
-        image = check_data['t1']
-        plt.figure()
-        plt.subplot(1,3,1)
-        plt.imshow(image[0,0, slice_index, :, :], cmap="gray", interpolation="none")
-        plt.subplot(1,3,2)
-        plt.imshow(image[0,0,:, slice_index, :], cmap="gray", interpolation="none")
-        plt.subplot(1,3,3)
-        plt.imshow(image[0,0,:,:,20], cmap="gray", interpolation="none")
         
-        plt.savefig(os.path.join(self.figures_path, "hiiiiiii4.png"))
         
 
 
@@ -538,34 +527,52 @@ class params:
         set from training set that are transferred from t1 to t2 then back to t1 
         """
         logger = self.logger
-        slice_idx = 20
+        slice_idx = 8
+        plot_num = len(data_loader)
         
         plt.figure("check top:t1, middle:transferd t1, bottom faket1", (3*len(data_loader), 6))
         plt.title("%s"%(modality))
-        logger.info("Generating map from given {} images, with {} samples".format(modality,len(data_loader)))
-        for i, batch_data in enumerate(data_loader):
-            logger = self.logger
-            real = batch_data[modality].permute(0,1,4,2,3).squeeze(1)
-            real = real.to("cpu")
-            _,  _,  _, _, real_z = self.disA(real) 
-            fake = self.gen2B(real_z)
-            fake = fake.detach()
+        logger.info("Generating map from given {} images, length of validation set{}, test with {} samples".format(modality,len(data_loader),plot_num))
+        #for i, batch_data in enumerate(data_loader):
+        for i in range(plot_num):
             
-            _, _, _, _, fake_z = self.disB(fake)  
-            fake_t1 = self.gen2A(fake_z)
-            fake_t1 = fake_t1.detach()
+            try:
+                batch_data, _ = next(data_iter)
+            except:
+                data_iter = iter(data_loader)
+                batch_data = next(data_iter)
 
-            logger.info("image shape: {}, slice = {}".format(fake.shape, slice_idx))
+            real = batch_data[modality].permute(4,0,1,2,3).squeeze(1)
+            real = real.to("cpu")
+            if modality == "t1":
+                _,  _,  _, _, real_z = self.disA(real) 
+                fake = self.gen2B(real_z)
+                fake = fake.detach()
+                
+                _, _, _, _, fake_z = self.disB(fake)  
+                fake_t1 = self.gen2A(fake_z)
+                fake_t1 = fake_t1.detach()
+            else:
+                _,  _,  _, _, real_z = self.disB(real) 
+                fake = self.gen2A(real_z)
+                fake = fake.detach()
+                
+                _, _, _, _, fake_z = self.disA(fake)  
+                fake_t1 = self.gen2B(fake_z)
+                fake_t1 = fake_t1.detach()
+
+
+            logger.info("image shape: {}, slice index = {}".format(fake.shape, slice_idx))
             
             plt.subplot(3,len(data_loader),i+1)
             
-            plt.imshow(real[0,slice_idx, :, :], cmap="gray", interpolation="none") 
+            plt.imshow(real[slice_idx,0, :, :], cmap="gray", interpolation="none") 
             
             plt.subplot(3,len(data_loader),i+len(data_loader)+1)
-            plt.imshow(fake[0,slice_idx, :, :], cmap="gray", interpolation="none") 
+            plt.imshow(fake[slice_idx, 0,:, :], cmap="gray", interpolation="none") 
             
             plt.subplot(3,len(data_loader),i+2*len(data_loader)+1)
-            plt.imshow(fake_t1[0,slice_idx, :, :], cmap="gray", interpolation="none") 
+            plt.imshow(fake_t1[slice_idx,0, :, :], cmap="gray", interpolation="none") 
             
             plt.savefig(os.path.join(self.figures_path, "%s_%07d.png"%(modality,step)))
 
@@ -608,8 +615,8 @@ class params:
             #logger.info("Number of iteration :{}".format(step))
             #logger.info("The shape of batch_data from dataloader:{}".format(real_A['t1'].shape))    
                 
-            real_A = real_A['t1'].permute(0,1,4,2,3).squeeze(1)
-            real_B = real_B['t2'].permute(0,1,4,2,3).squeeze(1)
+            real_A = real_A['t1'].permute(4,0,1,2,3).squeeze(1)
+            real_B = real_B['t2'].permute(4,0,1,2,3).squeeze(1)
             real_A, real_B = real_A.to(self.device), real_B.to(self.device)
             #logger.info("The shape of batch_data after transposing:{}".format(real_A.shape))
             #logger.info("Cuda memory allocated after loading data {}".format(convert_size(torch.cuda.memory_allocated(self.device))))
@@ -714,6 +721,7 @@ class params:
 
                 #self.generate_NiceGAN("t1","train",self.train_source_loader,step)
                 self.generate_NiceGAN("t1",self.val_source_loader,step)
+                self.generate_NiceGAN("t2",self.val_target_loader,step)
 
                 #  numpy does not support GPU, so remember to direct model back to GPU(self.device)
                 self.gen2B,self.gen2A = self.gen2B.to(self.device), self.gen2A.to(self.device)
@@ -723,8 +731,13 @@ class params:
         
         self.train_flag = True
 
-    def load(self):
-        params = torch.load(os.path.join(self.model_path, '_params_latest.pt'))
+    def load(self,path = None):
+        if path is None:
+            params = torch.load(os.path.join(self.model_path, 'params_0030000.pt'))
+        #params = torch.load(os.path.join(self.model_path, '_params_latest.pt'))
+        else:
+            params = torch.load(os.path.join(path, '_params_latest.pt'))
+        
         self.gen2B.load_state_dict(params['gen2B'])
         self.gen2A.load_state_dict(params['gen2A'])
         self.disA.load_state_dict(params['disA'])
@@ -733,12 +746,19 @@ class params:
         self.G_optim.load_state_dict(params['G_optimizer'])
         self.start_iter = params['start_iter'] 
     
-    def predictor_t1(self, batch_data):
+    def load_inference(self,path = None):
+        if path is None:
+            params = torch.load(os.path.join(self.model_path, 'params_0030000.pt'))
+        #params = torch.load(os.path.join(self.model_path, '_params_latest.pt'))
+        else:
+            params = torch.load(os.path.join(path, '_params_latest.pt'))
         
-        _,  _,  _, _, real_I_z = self.disA(batch_data)
-        fake_I  = self.gen2B(real_I_z)
-
-        return fake_I
+        self.gen2B.load_state_dict(params['gen2B'])
+        self.disA.load_state_dict(params['disA'])
+        self.D_optim.load_state_dict(params['D_optimizer'])
+        self.G_optim.load_state_dict(params['G_optimizer'])
+        self.start_iter = params['start_iter'] 
+    
 
     def inference(self):
         '''
@@ -754,10 +774,16 @@ class params:
 
         logger.info("infering the train source set- t1 scans")
         
+        '''
         self.gen2B.eval(), self.gen2A.eval(), self.disA.eval(), self.disB.eval()
 
         self.gen2B,self.gen2A = self.gen2B.to('cpu'), self.gen2A.to('cpu')
         self.disA,self.disB = self.disA.to('cpu'), self.disB.to('cpu')
+        '''
+        self.gen2B.eval(), self.disA.eval()
+
+        self.gen2B= self.gen2B.to('cpu')
+        self.disA = self.disA.to('cpu')
 
 
         transforms = Compose(
@@ -766,9 +792,11 @@ class params:
                 LoadImaged(keys=["t1","label"]),
                 AddChanneld(keys=["t1","label"]),
                 NormalizeIntensityd(keys=["t1"]),
-                SpatialPadd(keys=["t1","label"], spatial_size=self.sptial_shape_t1),
-                RandSpatialCropd( keys=["t1","label"], roi_size=self.sptial_shape_t1,random_center=True),
-                Resized(keys=['t1',"label"],spatial_size = self.pad_crop_shape,mode='area'),      
+                monai.transforms.RandSpatialCropSamplesd(keys=["t1","label"], num_samples =8, roi_size=[512,512,16],random_center=True, random_size=False),
+                #monai.transforms.CenterSpatialCropd(keys=["t1","label"], roi_size=[256,256,32],allow_missing_keys=False),
+                #SpatialPadd(keys=["t1","label"], spatial_size=[25,384,32]),
+                #RandSpatialCropd( keys=["t1","label"], roi_size=[384,384,32],random_center=True,random_size=False),
+                #Resized(keys=['t1',"label"],spatial_size = self.pad_crop_shape,mode='area'),      
                 ToTensord(keys=["t1","label"]),
             ]
         )    
@@ -786,16 +814,28 @@ class params:
         for i, batch_data in enumerate(train_source_loader):
             logger.info("infering {} ".format( os.path.split(self.train_source[i]['t1'])[1]))
             # size after permute 1 32 128 128 size before permute: 1 128 128 32
-            real_I = batch_data['t1'].permute(0,1,4,2,3).squeeze(1)
+            #real_I = batch_data['t1'].permute(0,1,4,2,3).squeeze(1)
+            maxlabel = 0
+            bestidx = 0
+            for idx in range(batch_data['label'].shape[0]):
+                label = batch_data['label'][idx,:,:,:]
+                if np.count_nonzero(label) > maxlabel:
+                    maxlabel = np.count_nonzero(label)
+                    bestidx = idx
+            real_I = batch_data['t1'][bestidx].squeeze()
             real_I = real_I.to("cpu")
-            print(real_I.shape)
-            _,  _,  _, _, real_I_z = self.disA(real_I)
-            output  = self.gen2B(real_I_z)
+            #print(real_I.shape)
+            #_,  _,  _, _, real_I_z = self.disA(real_I)
+            
+            #output  = self.gen2B(real_I_z)
+            output = predict_single_case(self.disA,self.gen2B, real_I, stride_xy=64,stride_z=16)
 
-            print("hahahjieguo",output.shape)
-            output = output.permute(0,2,3,1)
-            output = output.detach()
+            output = output.squeeze()
+            #output = output.permute(0,2,3,1).squeeze()
+            #output = output.detach()
+            print("output shape",output.shape,batch_data['label'][bestidx].squeeze().shape)
 
+            '''
             plt.figure()
             plt.subplot(2,2,1)
             plt.imshow(batch_data['t1'].permute(0,1,4,2,3).squeeze(1)[0,slice_idx,:,:],cmap="gray", interpolation="none")
@@ -806,19 +846,19 @@ class params:
             #print(np.count_nonzero(batch_data['label'].permute(0,1,4,2,3).squeeze(1)[0,0:10,:,:]>0))
             data_image_name = os.path.split(self.train_source[i]['t1'])[1]
             plt.savefig(os.path.join(self.figures_path, "check_image_%s.png"%(data_image_name)))
+            '''
 
             data_image_name = os.path.split(self.train_source[i]['t1'])[1]
+
+            write_nifti(real_I, os.path.join(self.t1_path,"%s"%(data_image_name)))
             write_nifti(output, os.path.join(self.ht2_path,"%s"%(data_image_name)))
 
             data_label_name = os.path.split(self.train_source[i]['label'])[1]
-            write_nifti(batch_data['label'].squeeze(1).to('cpu'), os.path.join(self.plabel_path,"%s"%(data_label_name)))
-            
-            plt.figure()
-        
-            
+            write_nifti(batch_data['label'][bestidx].squeeze().to('cpu'), os.path.join(self.plabel_path,"%s"%(data_label_name)))
+
   
-        self.gen2B,self.gen2A = self.gen2B.to(self.device), self.gen2A.to(self.device)
-        self.disA,self.disB = self.disA.to(self.device), self.disB.to(self.device)                
+        self.gen2B= self.gen2B.to(self.device)
+        self.disA = self.disA.to(self.device)
                 
                 
     
