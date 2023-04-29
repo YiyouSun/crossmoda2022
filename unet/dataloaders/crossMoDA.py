@@ -11,7 +11,7 @@ import nibabel as nib
 class MoDA(Dataset):
     """ MoDA Dataset """
 
-    def __init__(self, base_dir=None, split='train', num=None, transform=None, num_classes=2):
+    def __init__(self, base_dir=None, split='train',  num=None, transform=None, num_classes=2):
         self._base_dir = base_dir
         self.transform = transform
 
@@ -27,23 +27,24 @@ class MoDA(Dataset):
             with open(test_path, 'r') as f:
                 self.name_list = [a.strip() for a in f.readlines()]
         self.file_list = []
+
         for row in self.name_list:
-            t = os.path.join(self._base_dir,"train_source",row+'_ceT1.nii.gz')
-            label = os.path.join(self._base_dir,"train_source",row+'_Label.nii.gz')
+            t = os.path.join(self._base_dir,"training_source",row+'_ceT1.nii.gz')
+            label = os.path.join(self._base_dir,"training_source",row+'_Label.nii.gz')
             # mask = os.path.join(self._base_dir,'training_target',row[0]+'_GIFoutput.nii.gz')
 
             self.file_list.append({'image':t,"label":label})
 
         print("total labeled {} samples".format(len(self.file_list)))
-
-        if split == 'train':
+        
+        if split == 'semi-train':
             with open(train_target_path, 'r') as f:
                 self.name_list2 = [a.strip() for a in f.readlines()]
             for row in self.name_list2:
-                t = os.path.join(self._base_dir,"train_target",row+'_hrT2.nii.gz')
-                label = os.path.join(self._base_dir,"train_target",row+'_Label.nii.gz')
+                t = os.path.join(self._base_dir,"training_target",row+'_hrT2.nii.gz')
+                label = os.path.join(self._base_dir,"training_target",row+'_Label.nii.gz')
                 self.file_list.append({'image':t,"label":label})
-
+        
         if num is not None:
             self.file_list = self.file_list[:num]
         print("total {} samples".format(len(self.file_list)))
