@@ -33,7 +33,7 @@ Pixel alignment transfers the scans in ceT1 to that in hrT2, helping to reduce d
 
 ### train NiceGAN(extension version of cycled GAN)
 ```
-python trainGAN.py 
+python main.py 
 ```
 ### output 20000 iteration, best performed model, discrimator loss: ~0.1 generation loss: ~17
 ![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/t1.png)  
