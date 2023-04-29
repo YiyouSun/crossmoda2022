@@ -45,6 +45,10 @@ python trainGAN.py
 ![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/t2.png)  
 * Similar plots from t2 to t1
 
+### Inference by window sliding, stride =(32, 32, 16)
+![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/figures/inference.png)  
+
+
 
 
 ## semi-supervised Unet: 
