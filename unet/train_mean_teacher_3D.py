@@ -41,7 +41,7 @@ parser.add_argument('--deterministic', type=int,  default=1,
                     help='whether use deterministic training')
 parser.add_argument('--base_lr', type=float,  default=0.01,
                     help='segmentation network learning rate')
-parser.add_argument('--patch_size', type=list,  default=[128, 128, 32],
+parser.add_argument('--patch_size', type=list,  default=[256, 256, 16],
                     help='patch size of network input')
 parser.add_argument('--seed', type=int,  default=1337, help='random seed')
 
@@ -56,6 +56,12 @@ parser.add_argument('--consistency_type', type=str,default="mse", help='consiste
 parser.add_argument('--consistency', type=float,default=0.1, help='consistency')
 parser.add_argument('--consistency_rampup', type=float,default=200.0, help='consistency_rampup')
 parser.add_argument('--num_classes', type=int,default=2, help='num_classes')
+parser.add_argument('--cuda', type=int,default=7, help='cuda device number')
+parser.add_argument('--resume', type=bool,default=False, help='resume training or not')
+parser.add_argument('--print_num', type=int,default=400, help='print frequency')
+parser.add_argument('--semi', type=bool,default=False, help='semi-surpevised training or not')
+
+
 
 args = parser.parse_args()
 
@@ -71,6 +77,14 @@ def update_ema_variables(model, ema_model, alpha, global_step):
     for ema_param, param in zip(ema_model.parameters(), model.parameters()):
         ema_param.data.mul_(alpha).add_(1 - alpha, param.data)
 
+def create_model(ema=False):
+    # Network definition
+    net = unet_3D(n_classes=args.num_classes, in_channels=1).cuda()
+    model = net.cuda()
+    if ema:
+        for param in model.parameters():
+            param.detach_()
+    return model
 
 def train(args, snapshot_path):
     base_lr = args.base_lr
@@ -79,26 +93,42 @@ def train(args, snapshot_path):
     max_iterations = args.max_iterations
     num_classes = args.num_classes
 
-    def create_model(ema=False):
-        # Network definition
-        net = unet_3D(n_classes=num_classes, in_channels=1).cuda()
-        model = net.cuda()
-        if ema:
-            for param in model.parameters():
-                param.detach_()
-        return model
+    model_path = snapshot_path
+    if args.semi:
+        model_path = './model/MoDA/Mean_Teacher_t2/unet_3D'
+    
+    if args.resume:
+        model = unet_3D(n_classes=num_classes, in_channels=1).cuda()
+        save_mode_path = os.path.join(model_path, 'unet_3D_best_model.pth')
+        
+        model.load_state_dict(torch.load(save_mode_path))
+        print("init weight from {}".format(save_mode_path))
+    else :
+        model = create_model()
 
-    model = create_model()
     ema_model = create_model(ema=True)
-
-    db_train = MoDA(base_dir=train_data_path,
-                         split='train',
+    if args.semi:
+        db_train = MoDA(base_dir=train_data_path,
+                         split='semi-train',
                          num=None,
                          transform=transforms.Compose([
                              RandomRotFlip(),
                              RandomCrop(args.patch_size),
                              ToTensor(),
                          ]))
+    else:
+
+        db_train = MoDA(base_dir=train_data_path,
+                            split='train',
+                            num=None,
+                            transform=transforms.Compose([
+                                RandomRotFlip(),
+                                RandomCrop(args.patch_size),
+                                ToTensor(),
+                            ]))
+    
+    
+    
     total_num = len(db_train)
     def worker_init_fn(worker_id):
         random.seed(args.seed + worker_id)
@@ -180,7 +210,10 @@ def train(args, snapshot_path):
                 (iter_num, loss.item(), loss_ce.item(), loss_dice.item()))
             writer.add_scalar('loss/loss', loss, iter_num)
 
+            '''
+
             if iter_num % 20 == 0:
+                print("shape",volume_batch.shape)
                 image = volume_batch[0, 0:1, :, :, 20:61:10].permute(
                     3, 0, 1, 2).repeat(1, 3, 1, 1)
                 grid_image = make_grid(image, 5, normalize=True)
@@ -196,13 +229,15 @@ def train(args, snapshot_path):
                     0).permute(3, 0, 1, 2).repeat(1, 3, 1, 1)
                 grid_image = make_grid(image, 5, normalize=False)
                 writer.add_image('train/Groundtruth_label',
-                                 grid_image, iter_num)
+                                 grid_image, iter_num
+            '''
 
-            if iter_num > 0 and iter_num % 400 == 0:
+            if iter_num > 0 and iter_num % args.print_num == 0:
                 model.eval()
                 avg_metric = test_all_case(
                     model, args.root_path, test_list="val.txt", num_classes=num_classes, patch_size=args.patch_size,
-                    stride_xy=128, stride_z=32)
+                    stride_xy=64, stride_z=32)
+                
                 if avg_metric[:, 0].mean() > best_performance:
                     best_performance = avg_metric[:, 0].mean()
                     save_mode_path = os.path.join(snapshot_path,
@@ -217,10 +252,8 @@ def train(args, snapshot_path):
                                   avg_metric[0, 0], iter_num)
                 # writer.add_scalar('info/val_hd95',
                 #                   avg_metric[0, 1], iter_num)
-                # logging.info(
-                #     'iteration %d : dice_score : %f hd95 : %f' % (iter_num, avg_metric[0, 0].mean(), avg_metric[0, 1].mean()))
                 logging.info(
-                    'iteration %d : dice_score : %f' % (iter_num, avg_metric[0, 0].mean()))
+                    'iteration %d : dice_score : %f , %f' % (iter_num, avg_metric[0, 0].mean(),avg_metric[1, 0].mean()))
                 model.train()
 
             if iter_num % 3000 == 0:
@@ -249,7 +282,10 @@ if __name__ == "__main__":
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
+    #torch.cuda.manual_seed(args.seed)
+    #print("count",torch.cuda.device_count())
+    torch.cuda.set_device(args.cuda)
+    print("current devide cuda:",torch.cuda.current_device())
 
     snapshot_path = "../model/{}_{}/{}".format(
         args.exp, args.labeled_num, args.model)

@@ -88,23 +88,30 @@ def cal_metric(gt, pred):
         return np.zeros(1)
 
 
-def test_all_case(net, base_dir, test_list="full_test.list", num_classes=4, patch_size=(48, 160, 160), stride_xy=32, stride_z=24):
+def test_all_case(net, base_dir, test_list="full_test.list", num_classes=4, patch_size=(256, 256, 16), stride_xy=32, stride_z=16):
     with open(base_dir + '/{}'.format(test_list), 'r') as f:
         image_list = f.readlines()
     image_list = [base_dir + "/training_source/{}_ceT1.nii.gz".format(
         item.replace('\n', '').split(",")[0]) for item in image_list]
     total_metric = np.zeros((num_classes-1, 1))
+    sigle_metric = np.zeros((num_classes-1, 1))
     print("Validation begin")
     for image_path in tqdm(image_list):
         t0 = time.time()
         label_path = image_path.replace('ceT1', 'Label')
         image = nib.load(image_path).get_fdata()[:]
         label = nib.load(label_path).get_fdata()[:]
+        print("validation image shape", image.shape)
         prediction = test_single_case(
             net, image, stride_xy, stride_z, patch_size, num_classes=num_classes)
+        print("predication shape", prediction.shape)
         # print(time.time()-t0)
         for i in range(1, num_classes):
-            total_metric[i-1, :] += cal_metric(label == i, prediction == i)
+            sigle_metric [i-1,:] = cal_metric(label == i, prediction == i)
+            #total_metric[i-1, :] += cal_metric(label == i, prediction == i)
+            total_metric[i-1, :] += sigle_metric [i-1,:]
+        print(sigle_metric)
+        
         # print(time.time()-t0)
     print("Validation end")
     return total_metric / len(image_list)

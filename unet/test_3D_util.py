@@ -94,6 +94,7 @@ def test_all_case(net, base_dir, method="unet_3D", test_list="full_test.list", n
     image_list = [base_dir + "/training_source/{}_ceT1.nii.gz".format(
         item.replace('\n', '').split(",")[0]) for item in image_list]
     total_metric = np.zeros((num_classes-1, 1))
+    single_metric = np.zeros((num_classes-1, 1))
     print("Testing begin")
     with open(test_save_path + "/{}.txt".format(method), "a") as f:
         for image_path in tqdm(image_list):
@@ -101,13 +102,17 @@ def test_all_case(net, base_dir, method="unet_3D", test_list="full_test.list", n
             label_path = image_path.replace('ceT1', 'Label')
             image = nib.load(image_path).get_fdata()[:]
             label = nib.load(label_path).get_fdata()[:]
-            prediction = test_single_case(
-                net, image, stride_xy, stride_z, patch_size, num_classes=num_classes)
-            for i in range(1, num_classes):
-                total_metric[i-1, :] += calculate_metric_percase(label == i, prediction == i)
+            
+            prediction = test_single_case(net, image, stride_xy, stride_z, patch_size, num_classes=num_classes)
+            print("prediction map",prediction.shape)
+            for i in range(1,num_classes):
+                single_metric[i-1, :] = calculate_metric_percase(label == i, prediction == i)
+                total_metric[i-1,:] += single_metric[i-1,:]
+            
             # f.writelines("{},{},{},{},{}\n".format(
             #     image_path, metric[0], metric[1], metric[2], metric[3]))
                 f.writelines("{},{}\n".format(name, total_metric[i-1]))
+            print("dice for single image:",single_metric)
             
             pred_itk = sitk.GetImageFromArray(prediction.astype(np.uint8))
             pred_itk.SetSpacing((1.0, 1.0, 1.0))
