@@ -52,18 +52,13 @@ python main.py
 
 
 ## semi-supervised Unet: 
-### more details check slide:https://docs.google.com/presentation/d/169fnBWhWc0aZiRVoFuq8T28ePJBEuNThsMWZRg27k6k/edit#slide=id.p
-Self-training adapts the decision boundary of the segmentation network to fit the distribution of hrT2 scans. Refence code: https://github.com/HiLab-git/SSL4MIS
 
 ### train Unet
 ```
 cd unet/code
 ./semi_train3d.sh
 ```
-
-### semi-superviesed learning on original t1 scans and labels: predication on validation t1 2-D slice
-  
-![Image text](https://github.com/YiyouSun/crossmoda2022/blob/main/results/predication/crossmoda2021_ldn_103.png)  
-
-### semi-superviesed learning on Synthesized t2 scans, labels and original t2 scans: prediaction on validation t2 2-D slice
+### more details check slide
+https://docs.google.com/presentation/d/169fnBWhWc0aZiRVoFuq8T28ePJBEuNThsMWZRg27k6k/edit#slide=id.p
+Self-training adapts the decision boundary of the segmentation network to fit the distribution of hrT2 scans. Refence code: https://github.com/HiLab-git/SSL4MIS
 
