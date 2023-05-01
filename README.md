@@ -59,6 +59,6 @@ cd unet/code
 ./semi_train3d.sh
 ```
 ### more details check slide
-https://docs.google.com/presentation/d/169fnBWhWc0aZiRVoFuq8T28ePJBEuNThsMWZRg27k6k/edit#slide=id.p  
+https://docs.google.com/presentation/d/169fnBWhWc0aZiRVoFuq8T28ePJBEuNThsMWZRg27k6k/edit?usp=sharing  
 Self-training adapts the decision boundary of the segmentation network to fit the distribution of hrT2 scans. Refence code: https://github.com/HiLab-git/SSL4MIS
 
